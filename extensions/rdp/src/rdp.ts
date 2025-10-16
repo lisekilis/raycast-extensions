@@ -1,4 +1,4 @@
-import { showHUD, LaunchProps, showToast, Toast } from "@raycast/api";
+import { LaunchProps, showToast, Toast } from "@raycast/api";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { MESSAGES } from "./constants";
