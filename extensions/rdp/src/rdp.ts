@@ -1,44 +1,48 @@
-import { showHUD, LaunchProps } from "@raycast/api";
+import { showHUD, LaunchProps, showToast, Toast } from "@raycast/api";
 import { exec } from "child_process";
+import { promisify } from "util";
+import { MESSAGES } from "./constants";
+import { isValidServerAddress, getCommandForOS, logExecResult, isSupportedPlatform } from "./utils";
+import type { ExecResult } from "./types";
+import { showFailureToast } from "@raycast/utils";
+
+const execAsync = promisify(exec);
 
 export default async function main(props: LaunchProps) {
-  const server = props.arguments.server;
+  const { server } = props.arguments;
+
+  // Early validation with optimized error handling
   if (!server) {
-    await showHUD("No server address provided");
+    await showToast(Toast.Style.Failure, MESSAGES.NO_SERVER);
     return;
   }
 
-  await showHUD(`Starting RDP session to ${server}`);
-
-  //check os and run appropriate command
-  const os = process.platform;
-  switch (os) {
-    case "win32":
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      exec(`mstsc /v:${server}`, async (error: any, stdout: any, stderr: any) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          await showHUD(`Error starting RDP session: ${error.message}`);
-          return;
-        }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-      });
-      break;
-    case "darwin":
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      exec(`open rdp://${server}`, async (error: any, stdout: any, stderr: any) => {
-        if (error) {
-          console.error(`exec error: ${error}`);
-          await showHUD(`Error starting RDP session: ${error.message}`);
-          return;
-        }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-      });
-      break;
-    default:
-      await showHUD("Unsupported OS");
-      break;
+  if (!isValidServerAddress(server)) {
+    await showToast(Toast.Style.Failure, MESSAGES.INVALID_FORMAT);
+    return;
   }
+
+  if (!isSupportedPlatform()) {
+    await showToast(Toast.Style.Failure, MESSAGES.UNSUPPORTED_OS);
+    return;
+  }
+
+  await showToast(Toast.Style.Success, MESSAGES.STARTING_SESSION, server);
+
+  try {
+    const command = getCommandForOS(server);
+    if (!command) {
+      await showToast(Toast.Style.Failure, MESSAGES.UNSUPPORTED_OS);
+      return;
+    }
+
+    const result: ExecResult = await execAsync(command);
+    logExecResult(result);
+  } catch (error) {
+    await handleExecError(error);
+  }
+}
+
+async function handleExecError(error: unknown): Promise<void> {
+  await showFailureToast(error, { title: MESSAGES.ERROR_SESSION });
 }
