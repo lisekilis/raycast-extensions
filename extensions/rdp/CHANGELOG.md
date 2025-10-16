@@ -1,4 +1,4 @@
-# RDP Changelog
+# Remote Desktop Connector Changelog
 
 ## [Initial release] - {PR_MERGE_DATE}
 

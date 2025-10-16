@@ -2,11 +2,38 @@ import { IP_REGEX, HOSTNAME_REGEX, COMMANDS, SUPPORTED_PLATFORMS } from "./const
 import type { ExecResult } from "./types";
 
 /**
+ * Validation result interface for better error handling
+ */
+export interface ValidationResult {
+  readonly isValid: boolean;
+  readonly error?: string;
+}
+
+/**
  * Validates if the server address is in a valid format
  * Supports IP addresses and hostnames
  */
 export function isValidServerAddress(server: string): boolean {
   return IP_REGEX.test(server) || HOSTNAME_REGEX.test(server);
+}
+
+/**
+ * Comprehensive validation with detailed error messages
+ */
+export function validateServerInput(server: string): ValidationResult {
+  if (!server?.trim()) {
+    return { isValid: false, error: "No server address provided" };
+  }
+
+  if (!isValidServerAddress(server)) {
+    return { isValid: false, error: "Invalid server address format" };
+  }
+
+  if (!isSupportedPlatform()) {
+    return { isValid: false, error: "Unsupported OS" };
+  }
+
+  return { isValid: true };
 }
 
 /**

@@ -15,7 +15,23 @@ export const MESSAGES = {
   INVALID_FORMAT: "Invalid server address format",
   UNSUPPORTED_OS: "Unsupported OS",
   STARTING_SESSION: "Starting RDP session to",
-  ERROR_SESSION: "Error starting RDP session:",
+  ERROR_SESSION: "Error starting RDP session",
+} as const;
+
+// Toast configurations
+export const TOAST_CONFIG = {
+  VALIDATION_ERROR: {
+    style: "failure" as const,
+    title: "Validation Error",
+  },
+  SUCCESS: {
+    style: "success" as const,
+    title: "RDP Connection",
+  },
+  ERROR: {
+    style: "failure" as const,
+    title: "Connection Failed",
+  },
 } as const;
 
 // Supported platforms
